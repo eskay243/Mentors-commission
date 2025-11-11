@@ -39,11 +39,11 @@ export default async function StudentReceipts() {
     type: 'payment' as const,
     amount: payment.amount,
     description: payment.description || `Payment for ${payment.enrollment.course.title}`,
-    date: payment.paidAt.toLocaleDateString(),
+    date: payment.paidAt ? payment.paidAt.toLocaleDateString() : payment.createdAt.toLocaleDateString(),
     status: payment.status,
     reference: payment.stripePaymentId || payment.id,
     course: payment.enrollment.course.title,
-    mentor: payment.assignment?.mentor.name,
+    mentor: payment.assignment?.mentor?.name ?? undefined,
   }))
 
   return (

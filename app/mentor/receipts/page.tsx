@@ -49,8 +49,8 @@ export default async function MentorReceipts() {
     status: payment.status,
     reference: payment.stripePaymentId || payment.id,
     course: payment.enrollment.course.title,
-    payer: payment.payer.name,
-    payee: payment.assignment?.mentor.name,
+    payer: payment.payer?.name ?? undefined,
+    payee: payment.assignment?.mentor?.name ?? undefined,
     commission: payment.assignment?.commission,
   }))
 

@@ -1,6 +1,8 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+export const dynamic = 'force-dynamic'
+
+import { Suspense, useState, useEffect, useCallback } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeft, Save, Users, BookOpen, Tag, X } from 'lucide-react'
@@ -28,7 +30,7 @@ interface Course {
   category: string
 }
 
-export default function NewEnrollment() {
+function NewEnrollmentContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [students, setStudents] = useState<Student[]>([])
@@ -475,5 +477,13 @@ export default function NewEnrollment() {
         </form>
       </div>
     </div>
+  )
+}
+
+export default function NewEnrollment() {
+  return (
+    <Suspense fallback={<div className="p-6 text-gray-600">Loading enrollment form...</div>}>
+      <NewEnrollmentContent />
+    </Suspense>
   )
 }

@@ -1,6 +1,8 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+export const dynamic = 'force-dynamic'
+
+import { Suspense, useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Layout from '@/components/Layout'
 import { ArrowLeft, Save, X, User, GraduationCap, BookOpen, DollarSign } from 'lucide-react'
@@ -29,7 +31,7 @@ interface Enrollment {
   course: Course
 }
 
-export default function NewAssignment() {
+function NewAssignmentContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [loading, setLoading] = useState(false)
@@ -291,5 +293,13 @@ export default function NewAssignment() {
         </form>
       </div>
     </Layout>
+  )
+}
+
+export default function NewAssignment() {
+  return (
+    <Suspense fallback={<div className="p-6 text-gray-600">Loading assignment form...</div>}>
+      <NewAssignmentContent />
+    </Suspense>
   )
 }
