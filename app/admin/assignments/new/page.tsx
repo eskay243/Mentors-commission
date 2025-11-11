@@ -65,7 +65,9 @@ export default function NewAssignment() {
           
           // Auto-select enrollment if enrollmentId is provided in URL
           if (enrollmentIdFromUrl) {
-            const enrollment = activeEnrollments.find(e => e.id === enrollmentIdFromUrl)
+            const enrollment = activeEnrollments.find(
+              (enrollment) => enrollment.id === enrollmentIdFromUrl
+            )
             if (enrollment) {
               setFormData(prev => ({
                 ...prev,
