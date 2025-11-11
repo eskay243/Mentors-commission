@@ -1,6 +1,7 @@
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { redirect } from 'next/navigation'
+import { Prisma } from '@prisma/client'
 import { prisma } from '@/lib/prisma'
 import Layout from '@/components/Layout'
 import { FileText, TrendingUp, TrendingDown, DollarSign, Users, Calendar, Download } from 'lucide-react'
@@ -57,7 +58,7 @@ export default async function AdminReports() {
     }),
     
     // Monthly Revenue (last 12 months)
-    prisma.$queryRaw`
+    prisma.$queryRaw<Array<{ month: string; revenue: number; transactions: number }>>(Prisma.sql`
       SELECT 
         strftime('%Y-%m', createdAt) as month,
         SUM(amount) as revenue,
@@ -67,10 +68,10 @@ export default async function AdminReports() {
       AND createdAt >= date('now', '-12 months')
       GROUP BY strftime('%Y-%m', createdAt)
       ORDER BY month DESC
-    ` as Array<{ month: string; revenue: number; transactions: number }>,
+    `),
     
     // Monthly Expenses (last 12 months)
-    prisma.$queryRaw`
+    prisma.$queryRaw<Array<{ month: string; expenses: number; platform_fees: number }>>(Prisma.sql`
       SELECT 
         strftime('%Y-%m', createdAt) as month,
         SUM(mentorCommission) as expenses,
@@ -80,7 +81,7 @@ export default async function AdminReports() {
       AND createdAt >= date('now', '-12 months')
       GROUP BY strftime('%Y-%m', createdAt)
       ORDER BY month DESC
-    ` as Array<{ month: string; expenses: number; platform_fees: number }>,
+    `),
     
     // Mentor Earnings
     prisma.payment.findMany({
