@@ -34,7 +34,11 @@ export default async function UserDetailsPage({ params }: UserDetailsPageProps) 
         include: {
           student: true,
           course: true,
-          enrollment: true,
+          enrollment: {
+            include: {
+              payments: true,
+            },
+          },
         },
       },
       studentAssignments: {
