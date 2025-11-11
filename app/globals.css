@@ -1,0 +1,198 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --foreground-rgb: 31, 41, 55;
+  --background-start-rgb: 249, 250, 251;
+  --background-end-rgb: 255, 255, 255;
+}
+
+/* Force light mode for better text legibility */
+body {
+  color: rgb(31, 41, 55) !important;
+  background: rgb(249, 250, 251) !important;
+}
+
+@layer base {
+  html {
+    font-family: system-ui, sans-serif;
+  }
+  
+  /* Ensure all text is dark for legibility */
+  * {
+    color: inherit;
+  }
+  
+  /* Override any white text classes */
+  .text-white {
+    color: rgb(31, 41, 55) !important;
+  }
+  
+  /* Ensure form inputs have proper contrast */
+  input, textarea, select {
+    color: rgb(31, 41, 55) !important;
+    background-color: white !important;
+  }
+  
+  /* Fix any white backgrounds that might cause issues */
+  .bg-white {
+    background-color: white !important;
+    color: rgb(31, 41, 55) !important;
+  }
+}
+
+@layer components {
+  .btn {
+    @apply px-4 py-2 rounded-md font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2;
+  }
+  
+  .btn-primary {
+    @apply bg-primary-600 text-white hover:bg-primary-700 focus:ring-primary-500;
+  }
+  
+  .btn-secondary {
+    @apply bg-gray-200 text-gray-900 hover:bg-gray-300 focus:ring-gray-500;
+  }
+  
+  .card {
+    @apply bg-white rounded-lg shadow-md p-6 text-gray-900;
+  }
+  
+  .input {
+    @apply w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent text-gray-900 bg-white placeholder-gray-500;
+  }
+  
+  .label {
+    @apply block text-sm font-medium text-gray-700 mb-1;
+  }
+  
+  /* Additional text contrast fixes */
+  .text-gray-900 {
+    color: rgb(17, 24, 39) !important;
+  }
+  
+  .text-gray-800 {
+    color: rgb(31, 41, 55) !important;
+  }
+  
+  .text-gray-700 {
+    color: rgb(55, 65, 81) !important;
+  }
+  
+  .text-gray-600 {
+    color: rgb(75, 85, 99) !important;
+  }
+  
+  .text-gray-500 {
+    color: rgb(107, 114, 128) !important;
+  }
+  
+  /* Ensure table text is readable */
+  table {
+    color: rgb(31, 41, 55) !important;
+  }
+  
+  th, td {
+    color: rgb(31, 41, 55) !important;
+  }
+  
+  /* Fix any potential white text issues in forms */
+  form {
+    color: rgb(31, 41, 55) !important;
+  }
+  
+  /* Ensure navigation and header text is readable */
+  nav, header {
+    color: rgb(31, 41, 55) !important;
+  }
+  
+  /* Fix any remaining white text issues */
+  .text-white, .text-white-important {
+    color: rgb(31, 41, 55) !important;
+  }
+  
+  /* Ensure all divs and sections have proper text color */
+  div, section, article, aside, main {
+    color: inherit;
+  }
+  
+  /* Fix placeholder text contrast */
+  ::placeholder {
+    color: rgb(107, 114, 128) !important;
+    opacity: 1;
+  }
+  
+  /* Ensure links are visible */
+  a {
+    color: rgb(59, 130, 246) !important;
+  }
+  
+  a:hover {
+    color: rgb(37, 99, 235) !important;
+  }
+  
+  /* Fix any potential issues with dark backgrounds */
+  .bg-gray-50, .bg-gray-100, .bg-gray-200 {
+    color: rgb(31, 41, 55) !important;
+  }
+  
+  /* Ensure status badges have proper contrast */
+  .bg-green-100 {
+    color: rgb(22, 101, 52) !important;
+  }
+  
+  .bg-blue-100 {
+    color: rgb(30, 64, 175) !important;
+  }
+  
+  .bg-yellow-100 {
+    color: rgb(180, 83, 9) !important;
+  }
+  
+  .bg-red-100 {
+    color: rgb(153, 27, 27) !important;
+  }
+  
+  .bg-gray-100 {
+    color: rgb(55, 65, 81) !important;
+  }
+}
+
+/* Print styles for receipts */
+@media print {
+  .receipt-container {
+    max-width: none !important;
+    width: 100% !important;
+    margin: 0 !important;
+    box-shadow: none !important;
+    border: 1px solid #000 !important;
+    border-radius: 0 !important;
+  }
+  
+  .receipt-header {
+    border-bottom: 2px solid #000 !important;
+  }
+  
+  .receipt-footer {
+    border-top: 2px solid #000 !important;
+  }
+  
+  .amount-section {
+    border-top: 2px solid #000 !important;
+  }
+  
+  /* Hide modal backdrop and buttons when printing */
+  .fixed.inset-0 {
+    position: static !important;
+    background: transparent !important;
+  }
+  
+  .flex.justify-center.space-x-3 {
+    display: none !important;
+  }
+  
+  .flex.justify-between.items-center {
+    display: none !important;
+  }
+}

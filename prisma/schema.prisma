@@ -1,0 +1,249 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model User {
+  id                 String             @id @default(cuid())
+  name               String?
+  email              String             @unique
+  emailVerified      DateTime?
+  image              String?
+  role               String             @default("STUDENT")
+  phone              String?
+  address            String?
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+  accounts           Account[]
+  courses            Course[]
+  enrollments        Enrollment[]
+  expenses           Expense[]          @relation("UserExpenses")
+  studentAssignments MentorAssignment[] @relation("StudentAssignments")
+  mentorAssignments  MentorAssignment[] @relation("MentorAssignments")
+  mentorProfile      MentorProfile?
+  receivedMessages   Message[]          @relation("ReceivedMessages")
+  sentMessages       Message[]          @relation("SentMessages")
+  payments           Payment[]
+  sessions           Session[]
+  studentProfile     StudentProfile?
+  createdDiscounts   Discount[]
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model Course {
+  id          String             @id @default(cuid())
+  title       String
+  description String?
+  price       Float
+  duration    Int
+  level       String             @default("BEGINNER")
+  category    String             @default("General")
+  isActive    Boolean            @default(true)
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+  createdById String
+  createdBy   User               @relation(fields: [createdById], references: [id])
+  enrollments Enrollment[]
+  assignments MentorAssignment[]
+}
+
+model MentorProfile {
+  id              String   @id @default(cuid())
+  bio             String?
+  expertise       String
+  experience      Int?
+  rating          Float?   @default(0)
+  hourlyRate      Float?
+  availability    String?  // "FULL_TIME", "PART_TIME", "FREELANCE"
+  education       String?
+  certifications  String?
+  portfolioUrl    String?
+  linkedinUrl     String?
+  githubUrl       String?
+  timezone        String?
+  languages       String?  // Comma-separated list
+  userId          String   @unique
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model StudentProfile {
+  id             String   @id @default(cuid())
+  bio            String?
+  goals          String?
+  level          String?  // "BEGINNER", "INTERMEDIATE", "ADVANCED"
+  interests      String?  // Comma-separated list of interests
+  education      String?
+  currentJob     String?
+  experience     String?  // Previous experience in tech
+  timezone       String?
+  availability   String?  // "FULL_TIME", "PART_TIME", "WEEKENDS"
+  learningStyle  String?  // "VISUAL", "AUDITORY", "KINESTHETIC", "READING"
+  motivation     String?  // Why they want to learn
+  userId         String   @unique
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Enrollment {
+  id          String             @id @default(cuid())
+  studentId   String
+  courseId    String
+  status      String             @default("ACTIVE")
+  startDate   DateTime           @default(now())
+  endDate     DateTime?
+  totalAmount Float
+  paidAmount  Float              @default(0)
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+  course      Course             @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  student     User               @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  assignments MentorAssignment[]
+  payments    Payment[]
+  discountApplications DiscountApplication[]
+
+  @@unique([studentId, courseId])
+}
+
+model MentorAssignment {
+  id           String     @id @default(cuid())
+  mentorId     String
+  studentId    String
+  courseId     String
+  enrollmentId String
+  commission   Float      @default(37.0)
+  assignedAt   DateTime   @default(now())
+  status       String     @default("ACTIVE")
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  enrollment   Enrollment @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+  course       Course     @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  student      User       @relation("StudentAssignments", fields: [studentId], references: [id], onDelete: Cascade)
+  mentor       User       @relation("MentorAssignments", fields: [mentorId], references: [id], onDelete: Cascade)
+  payments     Payment[]
+
+  @@unique([mentorId, enrollmentId])
+}
+
+model Payment {
+  id               String            @id @default(cuid())
+  enrollmentId     String
+  assignmentId     String?
+  amount           Float
+  mentorCommission Float?
+  platformFee      Float?
+  status           String            @default("PENDING")
+  stripePaymentId  String?
+  description      String?
+  dueDate          DateTime?
+  paidAt           DateTime?
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  payerId          String
+  payer            User              @relation(fields: [payerId], references: [id])
+  assignment       MentorAssignment? @relation(fields: [assignmentId], references: [id])
+  enrollment       Enrollment        @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+}
+
+model Message {
+  id         String   @id @default(cuid())
+  senderId   String
+  receiverId String
+  content    String
+  read       Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  receiver   User     @relation("ReceivedMessages", fields: [receiverId], references: [id], onDelete: Cascade)
+  sender     User     @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
+}
+
+model Expense {
+  id          String    @id @default(cuid())
+  title       String
+  description String?
+  amount      Float
+  category    String
+  status      String    @default("PENDING")
+  receiptUrl  String?
+  approvedBy  String?
+  paidAt      DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  createdById String
+  createdBy   User      @relation("UserExpenses", fields: [createdById], references: [id], onDelete: Cascade)
+}
+
+model Discount {
+  id               String       @id @default(cuid())
+  code             String       @unique
+  name             String
+  description      String?
+  type             String       // "PERCENTAGE" or "FIXED"
+  value            Float        // Percentage (0-100) or fixed amount
+  minAmount        Float?       // Minimum order amount to apply discount
+  maxDiscount      Float?       // Maximum discount amount for percentage discounts
+  usageLimit       Int?         // Maximum number of times this discount can be used
+  usedCount        Int          @default(0) // Number of times already used
+  startDate        DateTime?
+  endDate          DateTime?
+  isActive         Boolean      @default(true)
+  applicableCourses String?     // Comma-separated course IDs, null means all courses
+  termsAndConditions String?    // Terms and conditions for the discount
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+  createdById      String
+  createdBy        User         @relation(fields: [createdById], references: [id], onDelete: Cascade)
+  applications     DiscountApplication[]
+}
+
+model DiscountApplication {
+  id         String   @id @default(cuid())
+  discountId String
+  enrollmentId String
+  amount     Float    // Discount amount applied
+  appliedAt  DateTime @default(now())
+  appliedBy  String   // User who applied the discount
+  discount   Discount @relation(fields: [discountId], references: [id], onDelete: Cascade)
+  enrollment Enrollment @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+
+  @@unique([discountId, enrollmentId])
+}

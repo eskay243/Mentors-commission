@@ -1,0 +1,333 @@
+'use client'
+
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
+import Layout from '@/components/Layout'
+import { ArrowLeft, Save, X, User, Mail, Phone, MapPin, Briefcase } from 'lucide-react'
+
+export default function NewUser() {
+  const router = useRouter()
+  const [loading, setLoading] = useState(false)
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    password: '',
+    role: 'STUDENT',
+    phone: '',
+    address: '',
+    // Mentor specific fields
+    bio: '',
+    expertise: '',
+    experience: '',
+    hourlyRate: '',
+    availability: '',
+    education: '',
+    certifications: '',
+    portfolioUrl: '',
+    linkedinUrl: '',
+    githubUrl: '',
+    timezone: '',
+    languages: '',
+    // Student specific fields
+    studentBio: '',
+    goals: '',
+    level: '',
+    interests: '',
+    studentEducation: '',
+    currentJob: '',
+    studentExperience: '',
+    studentTimezone: '',
+    studentAvailability: '',
+    learningStyle: '',
+    motivation: '',
+  })
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setLoading(true)
+
+    try {
+      const response = await fetch('/api/auth/signup', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      })
+
+      if (response.ok) {
+        router.push('/admin/users')
+      } else {
+        const error = await response.json()
+        alert(error.error || 'Failed to create user')
+      }
+    } catch (error) {
+      console.error('Error creating user:', error)
+      alert('Failed to create user')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const { name, value } = e.target
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }))
+  }
+
+  const isMentor = formData.role === 'MENTOR'
+  const isStudent = formData.role === 'STUDENT'
+
+  return (
+    <Layout>
+      <div className="max-w-4xl mx-auto">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center space-x-4">
+            <button
+              onClick={() => router.back()}
+              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </button>
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">Create New User</h1>
+              <p className="text-gray-600">Add a new user to the platform</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Form */}
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Basic Information */}
+          <div className="card">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+              <User className="h-5 w-5 mr-2" />
+              Basic Information
+            </h2>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="md:col-span-2">
+                <label htmlFor="name" className="label">
+                  Full Name *
+                </label>
+                <input
+                  type="text"
+                  id="name"
+                  name="name"
+                  required
+                  value={formData.name}
+                  onChange={handleChange}
+                  className="input"
+                  placeholder="Enter full name"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="email" className="label">
+                  Email Address *
+                </label>
+                <input
+                  type="email"
+                  id="email"
+                  name="email"
+                  required
+                  value={formData.email}
+                  onChange={handleChange}
+                  className="input"
+                  placeholder="user@example.com"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="password" className="label">
+                  Password *
+                </label>
+                <input
+                  type="password"
+                  id="password"
+                  name="password"
+                  required
+                  minLength={6}
+                  value={formData.password}
+                  onChange={handleChange}
+                  className="input"
+                  placeholder="Minimum 6 characters"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="role" className="label">
+                  User Role *
+                </label>
+                <select
+                  id="role"
+                  name="role"
+                  value={formData.role}
+                  onChange={handleChange}
+                  className="input"
+                >
+                  <option value="STUDENT">Student</option>
+                  <option value="MENTOR">Mentor</option>
+                  <option value="ADMIN">Admin</option>
+                </select>
+              </div>
+
+              <div>
+                <label htmlFor="phone" className="label">
+                  Phone Number
+                </label>
+                <input
+                  type="tel"
+                  id="phone"
+                  name="phone"
+                  value={formData.phone}
+                  onChange={handleChange}
+                  className="input"
+                  placeholder="+234 800 000 0000"
+                />
+              </div>
+
+              <div className="md:col-span-2">
+                <label htmlFor="address" className="label">
+                  Address
+                </label>
+                <input
+                  type="text"
+                  id="address"
+                  name="address"
+                  value={formData.address}
+                  onChange={handleChange}
+                  className="input"
+                  placeholder="Enter address"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Mentor Specific Information */}
+          {isMentor && (
+            <div className="card">
+              <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                <Briefcase className="h-5 w-5 mr-2" />
+                Mentor Profile
+              </h2>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="md:col-span-2">
+                  <label htmlFor="bio" className="label">
+                    Bio
+                  </label>
+                  <textarea
+                    id="bio"
+                    name="bio"
+                    rows={3}
+                    value={formData.bio}
+                    onChange={handleChange}
+                    className="input"
+                    placeholder="Tell us about yourself..."
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="expertise" className="label">
+                    Areas of Expertise
+                  </label>
+                  <input
+                    type="text"
+                    id="expertise"
+                    name="expertise"
+                    value={formData.expertise}
+                    onChange={handleChange}
+                    className="input"
+                    placeholder="e.g., React, Python, Machine Learning"
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="experience" className="label">
+                    Years of Experience
+                  </label>
+                  <input
+                    type="number"
+                    id="experience"
+                    name="experience"
+                    min="0"
+                    value={formData.experience}
+                    onChange={handleChange}
+                    className="input"
+                    placeholder="5"
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Student Specific Information */}
+          {isStudent && (
+            <div className="card">
+              <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                <User className="h-5 w-5 mr-2" />
+                Student Profile
+              </h2>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label htmlFor="interests" className="label">
+                    Areas of Interest
+                  </label>
+                  <input
+                    type="text"
+                    id="interests"
+                    name="interests"
+                    value={formData.interests}
+                    onChange={handleChange}
+                    className="input"
+                    placeholder="e.g., Web Development, Data Science"
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="education" className="label">
+                    Education Background
+                  </label>
+                  <input
+                    type="text"
+                    id="education"
+                    name="education"
+                    value={formData.education}
+                    onChange={handleChange}
+                    className="input"
+                    placeholder="e.g., Computer Science, Engineering"
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Actions */}
+          <div className="flex justify-end space-x-3">
+            <button
+              type="button"
+              onClick={() => router.back()}
+              className="btn btn-secondary"
+            >
+              <X className="h-4 w-4 mr-2" />
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={loading}
+              className="btn btn-primary"
+            >
+              <Save className="h-4 w-4 mr-2" />
+              {loading ? 'Creating...' : 'Create User'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </Layout>
+  )
+}
