@@ -85,8 +85,8 @@ export default function AdminImport() {
         }
       }
 
-      reader.onerror = (event: ProgressEvent<FileReader>) => {
-        reject(event)
+      reader.onerror = () => {
+        reject(reader.error ?? new Error('Failed to read file'))
       }
 
       reader.readAsBinaryString(file)
