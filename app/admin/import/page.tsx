@@ -70,7 +70,7 @@ export default function AdminImport() {
             complete: (results) => {
               resolve(results.data)
             },
-            error: (error) => {
+            error: (error: unknown) => {
               reject(error)
             },
           })
@@ -85,8 +85,8 @@ export default function AdminImport() {
         }
       }
 
-      reader.onerror = (error) => {
-        reject(error)
+      reader.onerror = (event: ProgressEvent<FileReader>) => {
+        reject(event)
       }
 
       reader.readAsBinaryString(file)
