@@ -5,7 +5,14 @@ WORKDIR /app
 
 # Copy package files
 COPY package.json package-lock.json* ./
-RUN npm ci
+
+# Install dependencies - use npm ci if lock file exists, otherwise npm install
+RUN if [ -f package-lock.json ]; then \
+      npm ci --only=production=false; \
+    else \
+      echo "⚠️  package-lock.json not found, using npm install"; \
+      npm install; \
+    fi
 
 # Stage 2: Builder
 FROM node:20-alpine AS builder
