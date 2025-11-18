@@ -3,15 +3,20 @@ FROM node:20-alpine AS deps
 RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
+# Show npm version for debugging
+RUN npm --version
+
 # Copy package files
 COPY package.json package-lock.json* ./
 
-# Install dependencies - use npm ci if lock file exists, otherwise npm install
+# Install dependencies
+# Use npm install which respects package-lock.json but is more forgiving than npm ci
 RUN if [ -f package-lock.json ]; then \
-      npm ci --only=production=false; \
+      echo "📦 Found package-lock.json, installing dependencies..."; \
+      npm install --legacy-peer-deps; \
     else \
-      echo "⚠️  package-lock.json not found, using npm install"; \
-      npm install; \
+      echo "⚠️  package-lock.json not found, using npm install..."; \
+      npm install --legacy-peer-deps; \
     fi
 
 # Stage 2: Builder
