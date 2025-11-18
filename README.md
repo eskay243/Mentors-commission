@@ -249,8 +249,25 @@ The application uses a comprehensive database schema with the following key enti
 
 ## Deployment
 
-### Hostinger VPS with Coolify (Recommended for Production)
-See `DEPLOYMENT.md` for complete deployment guide including:
+### Docker Deployment (Recommended - Easiest)
+
+**Using Docker with Coolify is the easiest way to deploy!**
+
+See `DOCKER_DEPLOYMENT.md` for step-by-step Docker deployment guide:
+- Docker setup for Coolify
+- Environment variable configuration
+- Database volume management
+- Migration handling
+- SSL/HTTPS configuration
+
+**Quick Docker Deploy:**
+1. Push code to GitHub (Dockerfile included)
+2. In Coolify: Create app → Select "Dockerfile"
+3. Add environment variables
+4. Deploy!
+
+### Hostinger VPS with Coolify (Alternative)
+See `DEPLOYMENT.md` for non-Docker deployment guide including:
 - Coolify setup on Hostinger VPS
 - CircleCI CI/CD pipeline configuration
 - Environment variable configuration

@@ -1,0 +1,29 @@
+# Alternative simpler Dockerfile (if standalone build has issues)
+# Use this if the main Dockerfile doesn't work
+
+FROM node:20-alpine
+
+WORKDIR /app
+
+# Install dependencies
+COPY package.json package-lock.json* ./
+RUN npm ci
+
+# Copy application files
+COPY . .
+
+# Generate Prisma Client
+RUN npx prisma generate
+
+# Build the application
+ENV NEXT_TELEMETRY_DISABLED=1
+RUN npm run build
+
+EXPOSE 3000
+
+ENV PORT=3000
+ENV HOSTNAME="0.0.0.0"
+ENV NODE_ENV=production
+
+CMD ["npm", "start"]
+

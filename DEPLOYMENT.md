@@ -2,6 +2,8 @@
 
 This guide covers deploying the EdTech Payment Platform to a Hostinger VPS with Coolify and CircleCI.
 
+> **Recommended**: Use Docker deployment for easier setup and better consistency. See `DOCKER_DEPLOYMENT.md` for Docker-specific instructions.
+
 ## Prerequisites
 
 - Hostinger VPS with Coolify installed
