@@ -39,6 +39,7 @@ model User {
   email              String             @unique
   emailVerified      DateTime?
   image              String?
+  password           String?            // Hashed password for credentials auth
   role               String             @default("STUDENT")
   phone              String?
   address            String?
@@ -57,6 +58,7 @@ model User {
   sessions           Session[]
   studentProfile     StudentProfile?
   createdDiscounts   Discount[]
+  auditLogs          AuditLog[]
 }
 
 model VerificationToken {
@@ -246,4 +248,21 @@ model DiscountApplication {
   enrollment Enrollment @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
 
   @@unique([discountId, enrollmentId])
+}
+
+model AuditLog {
+  id          String   @id @default(cuid())
+  userId      String   // User who performed the action
+  action      String   // Action performed (CREATE, UPDATE, DELETE, etc.)
+  entityType  String   // Type of entity (User, Course, Enrollment, etc.)
+  entityId    String   // ID of the entity affected
+  changes     String?  // JSON string of changes made
+  ipAddress   String?  // IP address of the user
+  userAgent   String?  // User agent string
+  createdAt   DateTime @default(now())
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([entityType, entityId])
+  @@index([createdAt])
 }

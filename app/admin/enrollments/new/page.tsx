@@ -60,7 +60,21 @@ function NewEnrollmentContent() {
       }
     }))
   }, [])
-  const [appliedDiscount, setAppliedDiscount] = useState<any>(null)
+  interface AppliedDiscount {
+    success: boolean
+    discountAmount: number
+    finalAmount: number
+    discount: {
+      code: string
+      name: string
+      termsAndConditions: string | null
+    }
+    enrollment: {
+      id: string
+      totalAmount: number
+    }
+  }
+  const [appliedDiscount, setAppliedDiscount] = useState<AppliedDiscount | null>(null)
   const [discountLoading, setDiscountLoading] = useState(false)
 
   useEffect(() => {

@@ -28,9 +28,17 @@ export const authOptions: NextAuthOptions = {
           return null
         }
 
-        // For demo purposes, we'll skip password verification
-        // In production, you'd compare with hashed password
-        // const isPasswordValid = await bcrypt.compare(credentials.password, user.password)
+        // Verify password if user has one stored
+        if (user.password) {
+          const isPasswordValid = await bcrypt.compare(credentials.password, user.password)
+          if (!isPasswordValid) {
+            return null
+          }
+        } else {
+          // For backward compatibility: if no password is stored, allow login with any password
+          // This is for existing demo users. In production, you should require password reset.
+          // TODO: Remove this fallback once all users have passwords set
+        }
 
         return {
           id: user.id,
@@ -67,5 +75,5 @@ export const authOptions: NextAuthOptions = {
   pages: {
     signIn: '/auth/signin',
   },
-  secret: process.env.NEXTAUTH_SECRET,
+  secret: process.env.NEXTAUTH_SECRET || 'fallback-secret-change-in-production',
 }

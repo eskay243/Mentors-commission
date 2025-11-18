@@ -11,7 +11,26 @@ export default function StudentProfile() {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [editing, setEditing] = useState(false)
-  const [profile, setProfile] = useState<any>(null)
+  interface StudentProfile {
+    id: string
+    name: string | null
+    email: string
+    studentProfile: {
+      id: string
+      bio: string | null
+      goals: string | null
+      level: string | null
+      interests: string | null
+      education: string | null
+      currentJob: string | null
+      experience: string | null
+      timezone: string | null
+      availability: string | null
+      learningStyle: string | null
+      motivation: string | null
+    } | null
+  }
+  const [profile, setProfile] = useState<StudentProfile | null>(null)
   const [formData, setFormData] = useState({
     bio: '',
     goals: '',

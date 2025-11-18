@@ -2,6 +2,12 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import Stripe from 'stripe'
+import { sendEmail, emailTemplates } from '@/lib/email'
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
+  apiVersion: '2024-11-20.acacia',
+})
 
 export async function POST(request: NextRequest) {
   try {
@@ -93,36 +99,80 @@ export async function POST(request: NextRequest) {
       },
     })
 
-    // In a real application, you would integrate with Stripe here
-    // For demo purposes, we'll simulate a successful payment after a delay
-    
-    // Simulate payment processing
-    setTimeout(async () => {
-      try {
+    // Create Stripe Payment Intent
+    let stripePaymentIntent
+    try {
+      if (process.env.STRIPE_SECRET_KEY) {
+        stripePaymentIntent = await stripe.paymentIntents.create({
+          amount: Math.round(amount * 100), // Convert to cents
+          currency: 'ngn', // Nigerian Naira - adjust as needed
+          description: description || `Payment for ${enrollment.course.title}`,
+          metadata: {
+            enrollmentId,
+            paymentId: payment.id,
+            studentId: session.user.id,
+          },
+          automatic_payment_methods: {
+            enabled: true,
+          },
+        })
+
+        // Update payment with Stripe Payment Intent ID
         await prisma.payment.update({
           where: { id: payment.id },
           data: {
-            status: 'COMPLETED',
-            paidAt: new Date(),
-            stripePaymentId: `pi_demo_${payment.id}`,
+            stripePaymentId: stripePaymentIntent.id,
           },
         })
 
-        // Update enrollment paid amount
-        const newPaidAmount = (totalPaid._sum.amount || 0) + amount
-        await prisma.enrollment.update({
-          where: { id: enrollmentId },
-          data: {
-            paidAmount: newPaidAmount,
-            status: newPaidAmount >= enrollment.totalAmount ? 'COMPLETED' : 'ACTIVE',
+        return NextResponse.json(
+          {
+            ...payment,
+            stripePaymentId: stripePaymentIntent.id,
+            clientSecret: stripePaymentIntent.client_secret,
           },
-        })
-      } catch (error) {
-        console.error('Error updating payment status:', error)
+          { status: 201 }
+        )
+      } else {
+        // Fallback: Simulate payment if Stripe is not configured
+        console.warn('Stripe not configured, simulating payment')
+        setTimeout(async () => {
+          try {
+            await prisma.payment.update({
+              where: { id: payment.id },
+              data: {
+                status: 'COMPLETED',
+                paidAt: new Date(),
+                stripePaymentId: `pi_demo_${payment.id}`,
+              },
+            })
+
+            const newPaidAmount = (totalPaid._sum.amount || 0) + amount
+            await prisma.enrollment.update({
+              where: { id: enrollmentId },
+              data: {
+                paidAmount: newPaidAmount,
+                status: newPaidAmount >= enrollment.totalAmount ? 'COMPLETED' : 'ACTIVE',
+              },
+            })
+          } catch (error) {
+            console.error('Error updating payment status:', error)
+          }
+        }, 2000)
+
+        return NextResponse.json(payment, { status: 201 })
       }
-    }, 2000) // 2 second delay to simulate processing
-
-    return NextResponse.json(payment, { status: 201 })
+    } catch (stripeError) {
+      console.error('Stripe error:', stripeError)
+      // If Stripe fails, keep payment as PENDING
+      return NextResponse.json(
+        {
+          ...payment,
+          error: 'Payment processing failed. Please try again.',
+        },
+        { status: 201 }
+      )
+    }
   } catch (error) {
     console.error('Error creating payment:', error)
     return NextResponse.json(

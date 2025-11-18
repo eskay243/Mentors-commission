@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { sendEmail, emailTemplates } from '@/lib/email'
 
 export async function POST(request: NextRequest) {
   try {
@@ -93,6 +94,25 @@ export async function POST(request: NextRequest) {
           description: `Enrollment payment for ${course.title}`,
         },
       })
+    }
+
+    // Send enrollment confirmation email
+    try {
+      if (student.email) {
+        const template = emailTemplates.enrollmentConfirmed(
+          student.name || student.email,
+          course.title
+        )
+        await sendEmail({
+          to: student.email,
+          subject: template.subject,
+          html: template.html,
+          text: template.text,
+        })
+      }
+    } catch (emailError) {
+      console.error('Error sending enrollment email:', emailError)
+      // Don't fail the enrollment if email fails
     }
 
     return NextResponse.json({

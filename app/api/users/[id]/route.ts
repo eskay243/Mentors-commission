@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { auditFromRequest } from '@/lib/audit'
 
 export async function GET(
   request: NextRequest,
@@ -100,6 +101,16 @@ export async function PUT(
       where: { id },
       data: updateData,
     })
+
+    // Audit log
+    await auditFromRequest(
+      request,
+      session.user.id,
+      'UPDATE',
+      'User',
+      id,
+      { changes: updateData, previous: existingUser }
+    )
 
     // Update mentor profile if role is MENTOR
     if (role === 'MENTOR') {
@@ -207,6 +218,16 @@ export async function DELETE(
     await prisma.user.delete({
       where: { id },
     })
+
+    // Audit log
+    await auditFromRequest(
+      request,
+      session.user.id,
+      'DELETE',
+      'User',
+      id,
+      { deletedUser: { email: existingUser.email, name: existingUser.name, role: existingUser.role } }
+    )
 
     return NextResponse.json({ message: 'User deleted successfully' })
   } catch (error) {

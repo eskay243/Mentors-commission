@@ -2,16 +2,26 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { withRateLimit, sanitizeRequestBody } from '@/lib/middleware'
+import { strictRateLimit } from '@/lib/rateLimit'
+import { sanitizeString } from '@/lib/sanitize'
+import { sendEmail, emailTemplates } from '@/lib/email'
 
 export async function POST(request: NextRequest) {
-  try {
-    const session = await getServerSession(authOptions)
-    
-    if (!session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
+  return withRateLimit(request, async (req) => {
+    try {
+      const session = await getServerSession(authOptions)
+      
+      if (!session) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      }
 
-    const { receiverId, content } = await request.json()
+      const body = await req.json()
+      const sanitizedBody = sanitizeRequestBody(body)
+      const { receiverId, content } = sanitizedBody
+      
+      // Additional sanitization for message content
+      const sanitizedContent = sanitizeString(content)
 
     if (!receiverId || !content) {
       return NextResponse.json(
@@ -36,8 +46,8 @@ export async function POST(request: NextRequest) {
     const message = await prisma.message.create({
       data: {
         senderId: session.user.id,
-        receiverId,
-        content,
+        receiverId: sanitizeString(receiverId),
+        content: sanitizedContent,
       },
       include: {
         sender: true,
@@ -45,12 +55,32 @@ export async function POST(request: NextRequest) {
       },
     })
 
-    return NextResponse.json(message, { status: 201 })
-  } catch (error) {
-    console.error('Error creating message:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
-  }
+    // Send email notification to receiver
+    try {
+      if (message.receiver.email) {
+        const template = emailTemplates.newMessage(
+          message.sender.name || message.sender.email,
+          sanitizedContent.substring(0, 100) // First 100 chars as preview
+        )
+        await sendEmail({
+          to: message.receiver.email,
+          subject: template.subject,
+          html: template.html,
+          text: template.text,
+        })
+      }
+    } catch (emailError) {
+      console.error('Error sending message email:', emailError)
+      // Don't fail the message if email fails
+    }
+
+      return NextResponse.json(message, { status: 201 })
+    } catch (error) {
+      console.error('Error creating message:', error)
+      return NextResponse.json(
+        { error: 'Internal server error' },
+        { status: 500 }
+      )
+    }
+  }, strictRateLimit)
 }

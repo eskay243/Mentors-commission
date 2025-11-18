@@ -45,8 +45,9 @@ export default function EnrollmentActionButtons({
 
       toast.success('Enrollment deleted successfully!')
       router.refresh() // Refresh the page to reflect the changes
-    } catch (error: any) {
-      toast.error(error.message || 'An unexpected error occurred.')
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred.'
+      toast.error(errorMessage)
     }
   }
 

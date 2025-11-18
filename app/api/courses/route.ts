@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { getPaginationParams, createPaginatedResponse } from '@/lib/pagination'
 
 export async function GET(request: NextRequest) {
   try {
@@ -11,9 +12,22 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    // Get pagination parameters
+    const { page, limit, skip } = getPaginationParams(request)
+
+    // Get total count
+    const total = await prisma.course.count()
+
+    // Fetch paginated courses
     const courses = await prisma.course.findMany({
       include: {
-        createdBy: true,
+        createdBy: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
         _count: {
           select: {
             enrollments: true,
@@ -22,9 +36,11 @@ export async function GET(request: NextRequest) {
         },
       },
       orderBy: { createdAt: 'desc' },
+      skip,
+      take: limit,
     })
 
-    return NextResponse.json(courses)
+    return NextResponse.json(createPaginatedResponse(courses, total, page, limit))
   } catch (error) {
     console.error('Error fetching courses:', error)
     return NextResponse.json(
