@@ -27,12 +27,31 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-# Generate Prisma Client
-RUN npx prisma generate
-
-# Build the application
+# Set build-time environment variables (safe defaults for build process)
+ENV DATABASE_URL="file:./prisma/dev.db"
+ENV NEXTAUTH_URL="http://localhost:3000"
+ENV NEXTAUTH_SECRET="build-time-secret-minimum-32-characters-long-for-validation"
 ENV NEXT_TELEMETRY_DISABLED=1
-RUN npm run build
+ENV NODE_OPTIONS="--max-old-space-size=4096"
+
+# Generate Prisma Client with error handling
+RUN echo "🔧 Generating Prisma Client..." && \
+    npx prisma generate || { \
+      echo "❌ Prisma generate failed!"; \
+      echo "Checking Prisma schema..."; \
+      ls -la prisma/ || echo "Prisma directory not found"; \
+      cat prisma/schema.prisma 2>/dev/null || echo "Schema file not readable"; \
+      exit 1; \
+    }
+
+# Build the application with verbose output
+RUN echo "🏗️  Starting Next.js build..." && \
+    npm run build 2>&1 | tee /tmp/build.log || { \
+      echo "❌ Build failed! Showing last 50 lines of output:"; \
+      tail -n 50 /tmp/build.log 2>/dev/null || echo "No build log available"; \
+      echo "📋 Check the error messages above for details"; \
+      exit 1; \
+    }
 
 # Stage 3: Runner
 FROM node:20-alpine AS runner
