@@ -21,11 +21,8 @@ RUN if [ -f package-lock.json ]; then \
 
 # Stage 2: Builder
 FROM node:20-alpine AS builder
-# Install OpenSSL 1.1 compatibility library for Prisma
-# Try different package names depending on Alpine version
-RUN apk add --no-cache openssl1.1-compat 2>/dev/null || \
-    apk add --no-cache openssl1.1-libs 2>/dev/null || \
-    apk add --no-cache openssl libc6-compat
+# Install OpenSSL libraries for Prisma (Node 20 + Prisma 5.7.1)
+RUN apk add --no-cache openssl openssl-dev libc6-compat
 WORKDIR /app
 
 # Copy dependencies from deps stage
@@ -88,11 +85,8 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 
-# Install OpenSSL 1.1 compatibility library for Prisma and wget for healthcheck
-# Try different package names depending on Alpine version
-RUN (apk add --no-cache openssl1.1-compat wget 2>/dev/null || \
-     apk add --no-cache openssl1.1-libs wget 2>/dev/null || \
-     apk add --no-cache openssl libc6-compat wget) && \
+# Install OpenSSL libraries for Prisma and wget for healthcheck
+RUN apk add --no-cache openssl openssl-dev libc6-compat wget && \
     echo "✅ OpenSSL libraries installed"
 
 # Create non-root user
