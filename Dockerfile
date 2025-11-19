@@ -1,6 +1,7 @@
 # Stage 1: Dependencies
-FROM node:20-alpine AS deps
-RUN apk add --no-cache libc6-compat
+FROM node:20-slim AS deps
+# Install OpenSSL library for Prisma (Node 20 needs libssl3)
+RUN apt-get update && apt-get install -y libssl3 && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 
 # Show npm version for debugging
@@ -20,9 +21,9 @@ RUN if [ -f package-lock.json ]; then \
     fi
 
 # Stage 2: Builder
-FROM node:20-alpine AS builder
-# Install OpenSSL libraries for Prisma (Node 20 + Prisma 5.7.1)
-RUN apk add --no-cache openssl openssl-dev libc6-compat
+FROM node:20-slim AS builder
+# Install OpenSSL libraries for Prisma (Node 20 + Prisma 5.7.1 needs libssl3)
+RUN apt-get update && apt-get install -y libssl3 && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 
 # Copy dependencies from deps stage
@@ -79,14 +80,14 @@ RUN echo "🏗️  Starting Next.js build..." && \
     echo "✅ Build completed successfully!"
 
 # Stage 3: Runner
-FROM node:20-alpine AS runner
+FROM node:20-slim AS runner
 WORKDIR /app
 
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 
 # Install OpenSSL libraries for Prisma and wget for healthcheck
-RUN apk add --no-cache openssl openssl-dev libc6-compat wget && \
+RUN apt-get update && apt-get install -y libssl3 wget && rm -rf /var/lib/apt/lists/* && \
     echo "✅ OpenSSL libraries installed"
 
 # Create non-root user
