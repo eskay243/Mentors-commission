@@ -29,7 +29,7 @@ export default async function Home() {
           <div className="flex justify-between h-16">
             <div className="flex items-center">
               <GraduationCap className="h-8 w-8 text-primary-600" />
-              <span className="ml-2 text-xl font-bold text-gray-900">EdTech Platform</span>
+              <span className="ml-2 text-xl font-bold text-gray-900">codelabpay</span>
             </div>
             <div className="flex items-center space-x-4">
               <Link href="/auth/signin" className="btn btn-secondary">
@@ -127,7 +127,7 @@ export default async function Home() {
             <div>
               <div className="flex items-center mb-4">
                 <GraduationCap className="h-8 w-8 text-primary-400" />
-                <span className="ml-2 text-xl font-bold">EdTech Platform</span>
+                <span className="ml-2 text-xl font-bold">codelabpay</span>
               </div>
               <p className="text-gray-400">
                 Revolutionizing education through technology and smart payment solutions.
@@ -159,7 +159,7 @@ export default async function Home() {
             </div>
           </div>
           <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
-            <p>&copy; 2024 EdTech Platform. All rights reserved.</p>
+            <p>&copy; 2024 codelabpay. All rights reserved.</p>
           </div>
         </div>
       </footer>

@@ -8,7 +8,7 @@ import { ErrorBoundaryWrapper } from '@/components/ErrorBoundaryWrapper'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'EdTech Payment Platform',
+  title: 'codelabpay',
   description: 'Comprehensive platform for student onboarding, mentor assignment, and payment management',
 }
 

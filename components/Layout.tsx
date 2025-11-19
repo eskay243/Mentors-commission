@@ -101,7 +101,7 @@ export default function Layout({ children }: LayoutProps) {
           <div className="flex h-16 items-center justify-between px-4">
             <div className="flex items-center">
               <GraduationCap className="h-8 w-8 text-primary-600" />
-              <span className="ml-2 text-xl font-bold text-gray-900">EdTech Platform</span>
+              <span className="ml-2 text-xl font-bold text-gray-900">codelabpay</span>
             </div>
             <button
               onClick={() => setSidebarOpen(false)}

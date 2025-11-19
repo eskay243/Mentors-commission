@@ -14,7 +14,7 @@ export default async function AdminSettings() {
 
   // For now, we'll use default settings. In a real app, these would come from a settings table
   const defaultSettings = {
-    platformName: 'EdTech Platform',
+    platformName: 'codelabpay',
     currency: 'NGN',
     currencySymbol: '₦',
     mentorCommissionRate: 37.0,
