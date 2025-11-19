@@ -7,14 +7,15 @@ services:
     container_name: mentors-commission-app-1
     ports:
       - "3000:3000"
+    # Use environment variables from .env file (recommended for production)
+    # For local development, create .env file with your actual values
+    env_file:
+      - .env
+    # Fallback environment variables (use .env file in production instead)
     environment:
-      - DATABASE_URL=file:./prisma/dev.db
-      - NEXTAUTH_URL=http://localhost:3000
-      - NEXTAUTH_SECRET=your-secret-key-here-minimum-32-characters
       - NODE_ENV=production
     volumes:
       - ./prisma:/app/prisma
-      - ./.env.local:/app/.env.local:ro
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/api/health"]
