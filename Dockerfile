@@ -1,7 +1,7 @@
 # Stage 1: Dependencies
 FROM node:20-slim AS deps
-# Install OpenSSL library for Prisma (Node 20 needs libssl3)
-RUN apt-get update && apt-get install -y libssl3 && rm -rf /var/lib/apt/lists/*
+# Install OpenSSL libraries for Prisma compatibility (both libssl3 and libssl1.1)
+RUN apt-get update && apt-get install -y libssl3 libssl1.1 && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 
 # Show npm version for debugging
@@ -22,8 +22,8 @@ RUN if [ -f package-lock.json ]; then \
 
 # Stage 2: Builder
 FROM node:20-slim AS builder
-# Install OpenSSL libraries for Prisma (Node 20 + Prisma 5.7.1 needs libssl3)
-RUN apt-get update && apt-get install -y libssl3 && rm -rf /var/lib/apt/lists/*
+# Install OpenSSL libraries for Prisma (both libssl3 and libssl1.1 for compatibility)
+RUN apt-get update && apt-get install -y libssl3 libssl1.1 && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 
 # Copy dependencies from deps stage
@@ -48,8 +48,9 @@ RUN echo "🗄️  Setting up Prisma..." && \
       touch prisma/dev.db; \
     fi
 
-# Generate Prisma Client with error handling
-RUN echo "🔧 Generating Prisma Client..." && \
+# Force regenerate Prisma Client to ensure correct binary for glibc (Debian)
+RUN echo "🔧 Regenerating Prisma Client for glibc..." && \
+    rm -rf node_modules/.prisma && \
     npx prisma generate || { \
       echo "❌ Prisma generate failed!"; \
       echo "Checking Prisma schema..."; \
@@ -86,8 +87,8 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 
-# Install OpenSSL libraries for Prisma and wget for healthcheck
-RUN apt-get update && apt-get install -y libssl3 wget && rm -rf /var/lib/apt/lists/* && \
+# Install OpenSSL libraries for Prisma (both versions for compatibility) and wget for healthcheck
+RUN apt-get update && apt-get install -y libssl3 libssl1.1 wget && rm -rf /var/lib/apt/lists/* && \
     echo "✅ OpenSSL libraries installed"
 
 # Create non-root user
