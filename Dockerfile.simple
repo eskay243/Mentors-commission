@@ -5,6 +5,12 @@ FROM node:20-alpine
 
 WORKDIR /app
 
+# Install OpenSSL 1.1 compatibility library for Prisma
+# Try different package names depending on Alpine version
+RUN apk add --no-cache openssl1.1-compat 2>/dev/null || \
+    apk add --no-cache openssl1.1-libs 2>/dev/null || \
+    apk add --no-cache openssl libc6-compat
+
 # Install dependencies
 COPY package.json package-lock.json* ./
 RUN npm install --legacy-peer-deps

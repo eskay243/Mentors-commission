@@ -126,5 +126,17 @@ cd /opt/apps/Mentors-commission
 - Run migrations: `docker run --rm -v $(pwd)/prisma:/app/prisma --env-file .env edtech-payment-platform:latest npx prisma migrate deploy`
 - Check permissions: `chmod -R 755 prisma`
 
+**Prisma/OpenSSL errors?**
+- Error: `Error loading shared library libssl.so.1.1`
+- The Dockerfile has been updated to fix this automatically
+- If you still see this error, try rebuilding: `docker-compose build --no-cache`
+- Alternative: Switch to Debian-based image by changing `FROM node:20-alpine` to `FROM node:20-slim` in Dockerfile
+
+**"Invalid credentials" on login?**
+- This is usually caused by Prisma not being able to connect to the database
+- Check the container logs: `docker logs edtech-app`
+- Verify DATABASE_URL is correct in your `.env` file
+- Ensure database migrations have run: `npx prisma migrate deploy`
+
 ## Need More Details?
 See `HOSTINGER_VPS_DEPLOYMENT.md` for comprehensive guide.
