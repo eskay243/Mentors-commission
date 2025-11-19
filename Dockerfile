@@ -27,6 +27,9 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
+# Ensure public directory exists (Next.js may need it)
+RUN mkdir -p public
+
 # Set build-time environment variables (safe defaults for build process)
 ENV DATABASE_URL="file:./prisma/dev.db"
 ENV NEXTAUTH_URL="http://localhost:3000"
