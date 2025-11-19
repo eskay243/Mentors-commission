@@ -21,10 +21,10 @@ export default function RootLayout({
     <html lang="en">
       <body className={inter.className}>
         <ErrorBoundaryWrapper>
-          <Providers>
-            {children}
-            <Toaster position="top-right" />
-          </Providers>
+        <Providers>
+          {children}
+          <Toaster position="top-right" />
+        </Providers>
         </ErrorBoundaryWrapper>
       </body>
     </html>

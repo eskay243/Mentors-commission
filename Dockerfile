@@ -34,6 +34,14 @@ ENV NEXTAUTH_SECRET="build-time-secret-minimum-32-characters-long-for-validation
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_OPTIONS="--max-old-space-size=4096"
 
+# Ensure Prisma directory exists and initialize database if needed
+RUN echo "🗄️  Setting up Prisma..." && \
+    mkdir -p prisma && \
+    if [ ! -f prisma/dev.db ]; then \
+      echo "📝 Creating empty database file for build..."; \
+      touch prisma/dev.db; \
+    fi
+
 # Generate Prisma Client with error handling
 RUN echo "🔧 Generating Prisma Client..." && \
     npx prisma generate || { \
@@ -44,14 +52,26 @@ RUN echo "🔧 Generating Prisma Client..." && \
       exit 1; \
     }
 
-# Build the application with verbose output
+# Build the application with verbose output and better error reporting
 RUN echo "🏗️  Starting Next.js build..." && \
+    echo "📋 Build environment:" && \
+    echo "  - DATABASE_URL: ${DATABASE_URL}" && \
+    echo "  - NEXTAUTH_URL: ${NEXTAUTH_URL}" && \
+    echo "  - NODE_ENV: ${NODE_ENV}" && \
     npm run build 2>&1 | tee /tmp/build.log || { \
-      echo "❌ Build failed! Showing last 50 lines of output:"; \
-      tail -n 50 /tmp/build.log 2>/dev/null || echo "No build log available"; \
-      echo "📋 Check the error messages above for details"; \
+      echo ""; \
+      echo "========================================="; \
+      echo "❌ BUILD FAILED - ERROR DETAILS:"; \
+      echo "========================================="; \
+      echo "Last 100 lines of build output:"; \
+      tail -n 100 /tmp/build.log 2>/dev/null || echo "No build log available"; \
+      echo ""; \
+      echo "Full error context:"; \
+      grep -i "error\|failed\|warning" /tmp/build.log 2>/dev/null | tail -n 50 || echo "No specific errors found in log"; \
+      echo "========================================="; \
       exit 1; \
-    }
+    } && \
+    echo "✅ Build completed successfully!"
 
 # Stage 3: Runner
 FROM node:20-alpine AS runner
