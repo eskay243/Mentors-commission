@@ -16,6 +16,7 @@ services:
     # Fallback environment variables (use .env file in production instead)
     environment:
       - NODE_ENV=production
+      - DATABASE_URL=file:///app/prisma/dev.db
     volumes:
       - ./prisma:/app/prisma
     restart: unless-stopped
